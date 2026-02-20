@@ -13,11 +13,7 @@ venv/bin/pip install -r requirements.txt
 
 ### 2. Configure environment
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+Create a `.env` file in the project root:
 
 ```
 OPENROUTER_MANAGEMENT_KEY=sk-or-v1-...   # From openrouter.ai/settings/keys (Management Key)
@@ -26,13 +22,13 @@ TELEGRAM_CHAT_ID=...                      # Optional: your chat/group ID
 REFRESH_INTERVAL=60                       # Seconds between refreshes in --watch mode
 ```
 
+- `OPENROUTER_MANAGEMENT_KEY` — create a **Management Key** at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) (not a regular API key)
+- `TELEGRAM_BOT_TOKEN` — create a bot via [@BotFather](https://t.me/BotFather) on Telegram
+- `TELEGRAM_CHAT_ID` — send a message to your bot, then visit `https://api.telegram.org/bot<TOKEN>/getUpdates` and look for `chat.id`
+
 ### 3. Configure projects
 
-```bash
-cp config.yaml.example config.yaml
-```
-
-Edit `config.yaml` — the `key_name` must exactly match the **name** field of your API key in OpenRouter:
+Create a `config.yaml` file in the project root — the `key_name` must exactly match the **name** field of your API key in OpenRouter:
 
 ```yaml
 projects:
@@ -76,6 +72,3 @@ venv/bin/python3 src/main.py --once --config /path/to/config.yaml
 ## Telegram alerts
 
 When `usage_monthly` exceeds `alert_monthly_usd` for a project, a Telegram message is sent. Alerts respect the `cooldown_minutes` setting to avoid spam.
-
-To get your `TELEGRAM_CHAT_ID`, send a message to your bot and visit:
-`https://api.telegram.org/bot<TOKEN>/getUpdates`
