@@ -1,0 +1,8 @@
+projects:
+  - key_name: "my-project"
+    label: "My Project"
+    alert_monthly_usd: 10.0
+
+alerts:
+  enabled: true
+  cooldown_minutes: 60
