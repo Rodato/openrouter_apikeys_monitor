@@ -28,6 +28,44 @@ def _status_text(pct: float) -> Text:
         return Text("OK", style="bold green")
 
 
+def _build_activity_table(activity: list[dict]) -> Table:
+    """Aggregate activity by model and return a Rich table."""
+    # Aggregate across all dates
+    totals: dict[str, dict] = {}
+    for entry in activity:
+        model = entry.get("model") or entry.get("model_permaslug") or "unknown"
+        if model not in totals:
+            totals[model] = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "usage": 0.0}
+        totals[model]["requests"] += entry.get("requests", 0)
+        totals[model]["prompt_tokens"] += entry.get("prompt_tokens", 0)
+        totals[model]["completion_tokens"] += entry.get("completion_tokens", 0)
+        totals[model]["usage"] += entry.get("usage", 0.0)
+
+    table = Table(
+        title="Actividad por modelo (cuenta completa)",
+        box=box.ROUNDED,
+        show_header=True,
+        header_style="bold cyan",
+        expand=True,
+    )
+    table.add_column("Modelo", style="bold")
+    table.add_column("Requests", justify="right")
+    table.add_column("Tokens prompt", justify="right")
+    table.add_column("Tokens respuesta", justify="right")
+    table.add_column("Costo total", justify="right")
+
+    for model, data in sorted(totals.items(), key=lambda x: x[1]["usage"], reverse=True):
+        table.add_row(
+            model,
+            str(data["requests"]),
+            f"{data['prompt_tokens']:,}",
+            f"{data['completion_tokens']:,}",
+            _fmt_usd(data["usage"]),
+        )
+
+    return table
+
+
 def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
     """Fetch data and return a Rich renderable + list of error strings."""
     client = OpenRouterClient(config.management_key)
@@ -48,6 +86,12 @@ def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
         credits_info = client.get_credits()
     except Exception as exc:
         errors.append(f"credits fetch error: {exc}")
+
+    activity: list[dict] = []
+    try:
+        activity = client.get_activity()
+    except Exception as exc:
+        errors.append(f"activity fetch error: {exc}")
 
     # Build table
     table = Table(
@@ -117,7 +161,8 @@ def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
     )
     header = Panel(header_text, style="dim")
 
-    renderables: list = [header, table]
+    activity_table = _build_activity_table(activity)
+    renderables: list = [header, table, activity_table]
     if errors:
         from rich.text import Text as RText
         err_text = RText("\n".join(errors), style="bold red")

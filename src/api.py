@@ -26,3 +26,11 @@ class OpenRouterClient:
             resp = client.get(f"{OPENROUTER_BASE}/credits", headers=self._headers)
             resp.raise_for_status()
             return resp.json()
+
+    def get_activity(self) -> list[dict]:
+        """Return account-level activity grouped by model and date."""
+        with httpx.Client(timeout=15) as client:
+            resp = client.get(f"{OPENROUTER_BASE}/activity", headers=self._headers)
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", []) if isinstance(data, dict) else data
