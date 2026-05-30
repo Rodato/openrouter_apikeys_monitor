@@ -12,17 +12,18 @@ from datetime import datetime
 def main():
     print("🤖 OpenRouter Monitor Scheduler started")
     print(f"   Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"   Daily reports will be sent at 9:00 AM")
+    print(f"   Reports will be sent at 8:00 AM and 5:00 PM")
     print()
 
-    last_report_day = -1
+    last_report_morning = -1
+    last_report_evening = -1
 
     while True:
         now = datetime.now()
 
-        # Send daily report at 9 AM (only once per day)
-        if now.hour == 9 and now.day != last_report_day:
-            print(f"📊 [{now.strftime('%Y-%m-%d %H:%M:%S')}] Sending daily report...")
+        # Send morning report at 8 AM
+        if now.hour == 8 and now.day != last_report_morning:
+            print(f"🌅 [{now.strftime('%Y-%m-%d %H:%M:%S')}] Sending morning report...")
             try:
                 result = subprocess.run(
                     ["python3", "src/main.py", "--report"],
@@ -31,7 +32,7 @@ def main():
                     timeout=60
                 )
                 if result.returncode == 0:
-                    print(f"✅ Report sent successfully")
+                    print(f"✅ Morning report sent successfully")
                 else:
                     print(f"❌ Report failed with code {result.returncode}")
                     print(f"   stdout: {result.stdout}")
@@ -39,11 +40,37 @@ def main():
             except Exception as exc:
                 print(f"❌ Exception sending report: {exc}")
 
-            last_report_day = now.day
+            last_report_morning = now.day
+
+        # Send evening report at 5 PM (17:00)
+        if now.hour == 17 and now.day != last_report_evening:
+            print(f"🌆 [{now.strftime('%Y-%m-%d %H:%M:%S')}] Sending evening report...")
+            try:
+                result = subprocess.run(
+                    ["python3", "src/main.py", "--report"],
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+                if result.returncode == 0:
+                    print(f"✅ Evening report sent successfully")
+                else:
+                    print(f"❌ Report failed with code {result.returncode}")
+                    print(f"   stdout: {result.stdout}")
+                    print(f"   stderr: {result.stderr}")
+            except Exception as exc:
+                print(f"❌ Exception sending report: {exc}")
+
+            last_report_evening = now.day
 
         # Heartbeat every hour to show we're alive
         if now.minute == 0:
-            print(f"💓 [{now.strftime('%H:%M')}] Scheduler alive, next report: tomorrow 9 AM" if now.hour != 9 else f"💓 [{now.strftime('%H:%M')}] Report sent, next: tomorrow 9 AM")
+            next_report = "today 5 PM" if now.hour < 17 else "tomorrow 8 AM"
+            if now.hour == 8:
+                next_report = "today 5 PM"
+            elif now.hour == 17:
+                next_report = "tomorrow 8 AM"
+            print(f"💓 [{now.strftime('%H:%M')}] Scheduler alive, next report: {next_report}")
 
         # Sleep 5 minutes before next check
         time.sleep(300)

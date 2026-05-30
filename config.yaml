@@ -1,4 +1,20 @@
 projects:
+  - key_name: "facturacion_plural"
+    label: "Facturación Plural"
+    alert_monthly_usd: 15.0
+
+  - key_name: "siigoAgent"
+    label: "Siigo Agent"
+    alert_monthly_usd: 10.0
+
+  - key_name: "aly_dashboard"
+    label: "Aly Dashboard"
+    alert_monthly_usd: 5.0
+
+  - key_name: "conversational_suite"
+    label: "Conversational Suite"
+    alert_monthly_usd: 5.0
+
   - key_name: "archetypeSuite"
     label: "Suite AI arquetipos"
     alert_monthly_usd: 10.0
@@ -9,7 +25,7 @@ projects:
 
   - key_name: "AlyBruno_Key"
     label: "Aly Bot - Bruno"
-    alert_monthly_usd: 15.0
+    alert_monthly_usd: 20.0
 
   - key_name: "PuddleAssistantKey"
     label: "Aly Bot - Daniel"
@@ -17,15 +33,15 @@ projects:
 
   - key_name: "AmaMonitoring"
     label: "AMA monitoring system"
-    alert_monthly_usd: 3.0
+    alert_monthly_usd: 5.0
 
   - key_name: "convocatorias-bot"
     label: "Convocatorias bot"
     alert_monthly_usd: 5.0
 
-  - key_name: "openroutermonitor"
-    label: "OpenRouter Monitor"
-    alert_monthly_usd: 1.0
+  - key_name: "OAuth: An app"
+    label: "OAuth App"
+    alert_monthly_usd: 2.0
 
   - key_name: "JEP_KEY"
     label: "JEP"
