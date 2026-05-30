@@ -71,34 +71,35 @@ To see the TUI in action with realistic sample data without needing an API key:
 venv/bin/python3 src/mock_main.py
 ```
 
-## VPS Deployment
+## Cloud Deployment
 
-For 24/7 monitoring and daily Telegram reports, see [deploy/README.md](deploy/README.md).
+### Railway (Recommended - 5 minutes setup)
 
-**Quick start on VPS:**
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new)
+
+1. Click the button above or go to [railway.app](https://railway.app)
+2. Deploy from GitHub: `Rodato/openrouter_apikeys_monitor`
+3. Add environment variables (see `.env` section above)
+4. Set start command: `python3 src/scheduler.py` (for daily reports at 9 AM)
+
+**Cost**: ~$2-3/month (fits in Railway's $5 free tier)
+
+See [deploy/RAILWAY.md](deploy/RAILWAY.md) for detailed instructions.
+
+### VPS (Traditional)
+
+For VPS deployment with cron or systemd, see [deploy/README.md](deploy/README.md).
+
+**Quick start:**
 
 ```bash
 git clone https://github.com/Rodato/openrouter_apikeys_monitor.git
 cd openrouter_apikeys_monitor
 pip3 install --user -r requirements.txt
-
-# Configure .env with your credentials
-nano .env
-
-# Setup daily report at 9 AM via cron
-chmod +x deploy/setup_cron.sh
-./deploy/setup_cron.sh
-
-# Test it works
-python3 src/main.py --report
+nano .env  # Configure credentials
+./deploy/setup_cron.sh  # Setup daily report at 9 AM
+python3 src/main.py --report  # Test
 ```
-
-### Deploy Options
-
-1. **Daily Telegram reports (recommended)** — cron sends a summary every morning
-2. **Continuous monitoring** — `--watch` mode with systemd or tmux for real-time alerts
-
-See [deploy/README.md](deploy/README.md) for detailed instructions.
 
 ## Status indicators
 

@@ -8,12 +8,19 @@
 - Scripts de deploy listos en `deploy/`
 - GitHub: https://github.com/Rodato/openrouter_apikeys_monitor
 
-## Pendiente
+## Deploy
 
-### Deploy en VPS
-- Subir el proyecto a la VPS
-- Configurar cron para reportes diarios (script listo: `deploy/setup_cron.sh`)
-- Opcional: correr `--watch` en background con systemd o tmux para alertas en tiempo real
+### Railway (Recomendado)
+- Dockerfile listo
+- `railway.json` configurado
+- `src/scheduler.py` para reportes diarios automáticos a las 9 AM
+- Ver `deploy/RAILWAY.md` para instrucciones
+
+### VPS (Alternativa)
+- Scripts listos en `deploy/`
+- `setup_cron.sh` para reportes diarios
+- `openrouter-monitor.service` para systemd
+- Ver `deploy/README.md`
 
 ## Decisiones tomadas
 - No hay web dashboard — las alertas de Telegram son suficientes para el equipo

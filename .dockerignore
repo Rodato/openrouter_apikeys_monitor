@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Local files (use Railway env vars instead)
+.env
+
+# Logs
+logs/
+*.log
+
+# Deploy scripts (not needed in container)
+deploy/
+
+# Documentation
+CLAUDE.md
+GEMINI.md
+README.md
