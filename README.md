@@ -56,9 +56,49 @@ venv/bin/python3 src/main.py --watch
 # Watch with custom interval
 venv/bin/python3 src/main.py --watch --interval 30
 
+# Send status report to Telegram (for cron)
+venv/bin/python3 src/main.py --report
+
 # Custom config file
 venv/bin/python3 src/main.py --once --config /path/to/config.yaml
 ```
+
+### Mock Mode (Preview)
+
+To see the TUI in action with realistic sample data without needing an API key:
+
+```bash
+venv/bin/python3 src/mock_main.py
+```
+
+## VPS Deployment
+
+For 24/7 monitoring and daily Telegram reports, see [deploy/README.md](deploy/README.md).
+
+**Quick start on VPS:**
+
+```bash
+git clone https://github.com/Rodato/openrouter_apikeys_monitor.git
+cd openrouter_apikeys_monitor
+pip3 install --user -r requirements.txt
+
+# Configure .env with your credentials
+nano .env
+
+# Setup daily report at 9 AM via cron
+chmod +x deploy/setup_cron.sh
+./deploy/setup_cron.sh
+
+# Test it works
+python3 src/main.py --report
+```
+
+### Deploy Options
+
+1. **Daily Telegram reports (recommended)** — cron sends a summary every morning
+2. **Continuous monitoring** — `--watch` mode with systemd or tmux for real-time alerts
+
+See [deploy/README.md](deploy/README.md) for detailed instructions.
 
 ## Status indicators
 
@@ -72,3 +112,7 @@ venv/bin/python3 src/main.py --once --config /path/to/config.yaml
 ## Telegram alerts
 
 When `usage_monthly` exceeds `alert_monthly_usd` for a project, a Telegram message is sent. Alerts respect the `cooldown_minutes` setting to avoid spam.
+
+---
+
+⭐ **Star this repo** if you find it useful for managing your AI budgets!

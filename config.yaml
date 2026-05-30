@@ -1,7 +1,41 @@
 projects:
-  - key_name: "my-project"
-    label: "My Project"
+  - key_name: "archetypeSuite"
+    label: "Suite AI arquetipos"
     alert_monthly_usd: 10.0
+
+  - key_name: "AMABot_Bruno"
+    label: "Chat Bot AMA - In house"
+    alert_monthly_usd: 200.0
+
+  - key_name: "AlyBruno_Key"
+    label: "Aly Bot - Bruno"
+    alert_monthly_usd: 15.0
+
+  - key_name: "PuddleAssistantKey"
+    label: "Aly Bot - Daniel"
+    alert_monthly_usd: 10.0
+
+  - key_name: "AmaMonitoring"
+    label: "AMA monitoring system"
+    alert_monthly_usd: 3.0
+
+  - key_name: "convocatorias-bot"
+    label: "Convocatorias bot"
+    alert_monthly_usd: 5.0
+
+  - key_name: "openroutermonitor"
+    label: "OpenRouter Monitor"
+    alert_monthly_usd: 1.0
+
+  - key_name: "JEP_KEY"
+    label: "JEP"
+    alert_monthly_usd: 10.0
+
+  - key_name: "BID-KEY"
+    label: "BID"
+    alert_monthly_usd: 10.0
+
+
 
 alerts:
   enabled: true

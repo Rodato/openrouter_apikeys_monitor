@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenRouter Monitor (watch mode)
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USER
+WorkingDirectory=/path/to/openrouterMonitor
+ExecStart=/usr/bin/python3 /path/to/openrouterMonitor/src/main.py --watch
+Restart=always
+RestartSec=10
+StandardOutput=append:/path/to/openrouterMonitor/logs/watch.log
+StandardError=append:/path/to/openrouterMonitor/logs/watch.log
+
+[Install]
+WantedBy=multi-user.target

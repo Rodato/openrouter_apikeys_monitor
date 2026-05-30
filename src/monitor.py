@@ -9,7 +9,7 @@ from rich import box
 
 from api import OpenRouterClient
 from config import AppConfig
-from alerts import maybe_alert
+from alerts import maybe_alert, send_status_report
 
 
 def _fmt_usd(value) -> str:
@@ -66,9 +66,10 @@ def _build_activity_table(activity: list[dict]) -> Table:
     return table
 
 
-def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
+def build_renderable(config: AppConfig, client: Optional[OpenRouterClient] = None) -> tuple[Group, list[str]]:
     """Fetch data and return a Rich renderable + list of error strings."""
-    client = OpenRouterClient(config.management_key)
+    if client is None:
+        client = OpenRouterClient(config.management_key)
     errors: list[str] = []
 
     # Fetch API data
@@ -147,9 +148,10 @@ def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
         )
 
     # Header info
-    total_purchased = credits_info.get("total_purchased") or credits_info.get("purchased") or 0
-    total_consumed = credits_info.get("total_consumed") or credits_info.get("consumed") or 0
-    remaining = float(total_purchased) - float(total_consumed)
+    # API returns {"total_credits": ..., "total_usage": ...} after unwrapping
+    total_purchased = float(credits_info.get("total_credits") or credits_info.get("total_purchased") or 0)
+    total_consumed = float(credits_info.get("total_usage") or credits_info.get("total_consumed") or 0)
+    remaining = total_purchased - total_consumed
 
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     header_text = (
@@ -169,3 +171,95 @@ def build_renderable(config: AppConfig) -> tuple[Group, list[str]]:
         renderables.append(Panel(err_text, title="Errors", border_style="red"))
 
     return Group(*renderables), errors
+
+
+def build_telegram_report(config: AppConfig, client: Optional[OpenRouterClient] = None) -> tuple[str, list[str]]:
+    """Fetch data and return a Telegram-formatted status report string."""
+    if client is None:
+        client = OpenRouterClient(config.management_key)
+    errors: list[str] = []
+
+    keys_by_name: dict[str, dict] = {}
+    try:
+        keys = client.get_keys()
+        for k in keys:
+            name = k.get("name") or k.get("label") or ""
+            keys_by_name[name] = k
+    except Exception as exc:
+        errors.append(f"keys: {exc}")
+
+    credits_info: dict = {}
+    try:
+        credits_info = client.get_credits()
+    except Exception as exc:
+        errors.append(f"credits: {exc}")
+
+    activity: list[dict] = []
+    try:
+        activity = client.get_activity()
+    except Exception as exc:
+        errors.append(f"activity: {exc}")
+
+    total_purchased = float(credits_info.get("total_credits") or credits_info.get("total_purchased") or 0)
+    total_consumed = float(credits_info.get("total_usage") or credits_info.get("total_consumed") or 0)
+    remaining = total_purchased - total_consumed
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    lines = [
+        "📊 *OpenRouter — Estado de proyectos*",
+        f"🕐 {now_str}",
+        "",
+        f"💳 Créditos totales: *${total_purchased:.2f}* | Consumido: *${total_consumed:.4f}* | Disponible: *${remaining:.4f}*",
+        "",
+        "*Uso mensual por proyecto (activos esta semana):*",
+    ]
+
+    for proj in config.projects:
+        key_data = keys_by_name.get(proj.key_name, {})
+        usage_weekly = float(key_data.get("usage_weekly") or 0)
+        if usage_weekly == 0:
+            continue  # skip keys with no activity this week
+        usage_monthly = float(key_data.get("usage_monthly") or 0)
+        disabled = key_data.get("disabled", False)
+
+        if disabled:
+            icon = "🚫"
+            status = "DISABLED"
+        elif proj.alert_monthly_usd > 0:
+            pct = usage_monthly / proj.alert_monthly_usd * 100
+            icon = "🔴" if pct >= 100 else "⚠️" if pct >= 80 else "✅"
+            status = f"${usage_monthly:.4f} / ${proj.alert_monthly_usd:.2f} ({pct:.1f}%)"
+        else:
+            icon = "✅"
+            status = f"${usage_monthly:.4f}"
+
+        lines.append(f"{icon} {proj.label} — {status}")
+
+    # Top models
+    if activity:
+        totals: dict[str, float] = {}
+        for entry in activity:
+            model = entry.get("model") or entry.get("model_permaslug") or "unknown"
+            totals[model] = totals.get(model, 0.0) + float(entry.get("usage", 0))
+        top = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:5]
+        lines += ["", "*Top modelos (cuenta completa):*"]
+        for model, cost in top:
+            short = model.split("/")[-1] if "/" in model else model
+            lines.append(f"  • {short} — ${cost:.4f}")
+
+    if errors:
+        lines += ["", f"⚠️ Errores: {'; '.join(errors)}"]
+
+    return "\n".join(lines), errors
+
+
+def send_telegram_report(config: AppConfig) -> bool:
+    """Build and send the status report. Returns True if sent successfully."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        print("[report] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured.")
+        return False
+    text, errors = build_telegram_report(config)
+    ok = send_status_report(config.telegram_bot_token, config.telegram_chat_id, text)
+    if ok:
+        print(f"[report] Status report sent. Errors during fetch: {errors or 'none'}")
+    return ok

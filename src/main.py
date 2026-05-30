@@ -11,7 +11,7 @@ from rich.live import Live
 from rich.console import Console
 
 from config import load_config
-from monitor import build_renderable
+from monitor import build_renderable, send_telegram_report
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,6 +28,7 @@ Examples:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--once", action="store_true", help="Print snapshot and exit")
     mode.add_argument("--watch", action="store_true", help="Continuously refresh display")
+    mode.add_argument("--report", action="store_true", help="Send status report to Telegram and exit (for cron)")
     parser.add_argument(
         "--interval",
         type=int,
@@ -50,6 +51,10 @@ def main() -> None:
         config.refresh_interval = args.interval
 
     console = Console()
+
+    if args.report:
+        ok = send_telegram_report(config)
+        sys.exit(0 if ok else 1)
 
     if args.once:
         renderable, errors = build_renderable(config)

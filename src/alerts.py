@@ -46,6 +46,22 @@ def send_alert(
         return False
 
 
+def send_status_report(bot_token: str, chat_id: str, text: str) -> bool:
+    """Send a periodic status report to Telegram. No cooldown — caller controls frequency."""
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    try:
+        resp = requests.post(
+            url,
+            json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return True
+    except Exception as exc:
+        print(f"[alerts] Failed to send status report: {exc}")
+        return False
+
+
 def maybe_alert(
     bot_token: Optional[str],
     chat_id: Optional[str],
